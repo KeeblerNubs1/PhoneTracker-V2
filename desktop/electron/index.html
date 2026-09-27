@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NEMIS Guardian</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <div><p class="eyebrow">CONSENT-BASED DEVICE SECURITY</p><h1>NEMIS <span>//</span> GUARDIAN</h1></div>
+        <div class="connection"><label for="api-url">API address</label><input id="api-url" value="http://127.0.0.1:8000/" /><button id="connect" class="secondary">Check connection</button><output id="status">Not checked</output></div>
+      </header>
+
+      <section class="dashboard"><div><h2>Device inventory</h2><p id="device-count">0 enrolled devices</p></div><button id="refresh">Refresh inventory</button></section>
+      <section class="table-wrap"><table><thead><tr><th>Device ID</th><th>Name</th><th>Platform</th><th>Last seen</th><th>Battery</th><th>Coordinates</th></tr></thead><tbody id="devices"><tr><td colspan="6" class="empty">Connect to load devices.</td></tr></tbody></table></section>
+
+      <section class="forms">
+        <form id="enroll-form" class="panel"><div class="panel-title"><h2>Enroll a device</h2><p>Creates a visible, consent-based device record.</p></div><label>Device ID<input name="device_id" required minlength="3" maxlength="128" placeholder="e.g. company-phone-01" /></label><label>Device name<input name="name" required maxlength="128" placeholder="e.g. Alex's Pixel" /></label><label>Platform<input name="platform" maxlength="32" value="android" /></label><button type="submit">Enroll device</button><p class="form-message" id="enroll-message"></p></form>
+        <form id="location-form" class="panel"><div class="panel-title"><h2>Record location</h2><p>Enter a current location using the enrollment token.</p></div><div class="grid"><label>Device ID<input name="device_id" required /></label><label>Enrollment token<input name="token" type="password" required /></label><label>Latitude<input name="latitude" type="number" min="-90" max="90" step="any" required /></label><label>Longitude<input name="longitude" type="number" min="-180" max="180" step="any" required /></label><label>Accuracy (m)<input name="accuracy" type="number" min="0" step="any" /></label><label>Battery (%)<input name="battery" type="number" min="0" max="100" step="any" /></label><label>Timestamp<input name="timestamp" type="datetime-local" /></label></div><button type="submit">Save location report</button><p class="form-message" id="location-message"></p></form>
+        <form id="tower-form" class="panel wide"><div class="panel-title"><h2>Record a cell-tower observation</h2><p>Report radio information read by an enrolled, consenting device. This console does not directly access carrier networks.</p></div><div class="grid tower-grid"><label>Device ID<input name="device_id" required /></label><label>Enrollment token<input name="token" type="password" required /></label><label>Radio type<input name="radio_type" value="lte" maxlength="32" required /></label><label>Signal (dBm)<input name="signal_dbm" type="number" step="any" placeholder="e.g. -92" /></label><label>Mobile country code (MCC)<input name="mobile_country_code" type="number" min="0" max="999" required /></label><label>Mobile network code (MNC)<input name="mobile_network_code" type="number" min="0" max="999" required /></label><label>Area code (TAC/LAC)<input name="area_code" type="number" min="0" required /></label><label>Cell ID<input name="cell_id" type="number" min="0" required /></label><label>Latitude (optional)<input name="latitude" type="number" min="-90" max="90" step="any" /></label><label>Longitude (optional)<input name="longitude" type="number" min="-180" max="180" step="any" /></label><label>Accuracy (m)<input name="accuracy" type="number" min="0" step="any" /></label><label>Timestamp<input name="timestamp" type="datetime-local" /></label></div><button type="submit">Save tower observation</button><p class="form-message" id="tower-message"></p></form>
+      </section>
+    </main>
+    <script src="renderer.js"></script>
+  </body>
+</html>

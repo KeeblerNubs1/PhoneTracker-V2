@@ -19,7 +19,7 @@ A consent-based mobile device security and asset-tracking platform.
 Android Agent -> HTTPS REST API -> SQLite/PostgreSQL
                               ^
                               |
-                       Tkinter Dashboard
+                  Electron / Tkinter Dashboard
 
 ## Run the server
 
@@ -28,7 +28,7 @@ cd server
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
-uvicorn app:app --reload
+uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 Open API docs at `http://127.0.0.1:8000/docs`.
@@ -60,6 +60,24 @@ cd desktop
 pip install -r requirements.txt
 python nemis_guardian.py
 ```
+
+## Run the Electron desktop console
+
+The Electron console provides forms for enrolling devices and recording
+consented location and cell-tower observations, as well as an inventory view. It connects to the
+local API at `http://127.0.0.1:8000` by default; the API address can be changed
+in the application when needed.
+
+```bash
+cd desktop/electron
+npm install
+npm start
+```
+
+Cell-tower observations are sent by an explicitly enrolled device using its
+token. The API records its MCC, MNC, area/cell identifiers, signal, and optional
+coordinates; it does not directly connect to mobile carrier infrastructure or
+locate devices that have not enrolled and reported their data.
 
 ## Android
 
