@@ -1,10 +1,13 @@
 from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel, Field
 from datetime import datetime, timezone
+import os
 import sqlite3
 import secrets
 
-DB = "nemis_guardian.db"
+# Set NEMIS_DB_PATH when deploying so the SQLite database can live on a
+# persistent volume rather than inside the application image.
+DB = os.getenv("NEMIS_DB_PATH", "nemis_guardian.db")
 app = FastAPI(title="NEMIS Guardian API", version="1.0.0")
 
 def db():

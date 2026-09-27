@@ -33,6 +33,26 @@ uvicorn app:app --reload
 
 Open API docs at `http://127.0.0.1:8000/docs`.
 
+## Run with Docker
+
+Build and start the API with Docker Compose:
+
+```bash
+docker compose up --build -d
+```
+
+The API is available at `http://127.0.0.1:8000`, and the SQLite database is
+stored in the named `nemis_guardian_data` volume so it persists across
+container recreation. Stop the service with `docker compose down` (add
+`--volumes` to remove the stored development data).
+
+To build the API image directly from the repository root instead:
+
+```bash
+docker build -t nemis-guardian-api .
+docker run --rm -p 8000:8000 -v nemis_guardian_data:/data nemis-guardian-api
+```
+
 ## Run the desktop dashboard
 
 ```bash

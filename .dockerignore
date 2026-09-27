@@ -1,0 +1,15 @@
+.git/
+.github/
+.venv/
+__pycache__/
+*.py[cod]
+*.db
+.env
+.idea/
+.vscode/
+android/
+desktop/
+docs/
+EXAMPLES/
+build/
+dist/
