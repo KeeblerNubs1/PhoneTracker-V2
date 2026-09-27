@@ -46,6 +46,20 @@ def init():
         device_id TEXT,
         detail TEXT
     );
+    CREATE TABLE IF NOT EXISTS cell_towers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        device_id TEXT NOT NULL,
+        timestamp TEXT NOT NULL,
+        radio_type TEXT NOT NULL,
+        mobile_country_code INTEGER NOT NULL,
+        mobile_network_code INTEGER NOT NULL,
+        area_code INTEGER NOT NULL,
+        cell_id INTEGER NOT NULL,
+        signal_dbm REAL,
+        latitude REAL,
+        longitude REAL,
+        accuracy REAL
+    );
     """)
     c.commit()
     c.close()
@@ -62,6 +76,23 @@ class LocationReport(BaseModel):
     longitude: float
     accuracy: float | None = None
     battery: float | None = None
+    timestamp: str | None = None
+
+class CellTowerReport(BaseModel):
+    """A tower observation reported by an enrolled, consenting device.
+
+    The server records observations and does not communicate with carrier
+    infrastructure or locate un-enrolled phones.
+    """
+    radio_type: str = Field(default="lte", min_length=1, max_length=32)
+    mobile_country_code: int = Field(ge=0, le=999)
+    mobile_network_code: int = Field(ge=0, le=999)
+    area_code: int = Field(ge=0)
+    cell_id: int = Field(ge=0)
+    signal_dbm: float | None = None
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
+    accuracy: float | None = Field(default=None, ge=0)
     timestamp: str | None = None
 
 def audit(action, device_id=None, detail=""):
@@ -120,6 +151,23 @@ def report_location(device_id: str, report: LocationReport, x_device_token: str 
     audit("LOCATION_REPORT", device_id)
     return {"accepted": True, "timestamp": ts}
 
+@app.post("/devices/{device_id}/cell-towers")
+def report_cell_tower(device_id: str, report: CellTowerReport, x_device_token: str | None = Header(default=None)):
+    authenticate(device_id, x_device_token)
+    ts = report.timestamp or datetime.now(timezone.utc).isoformat()
+    c = db()
+    c.execute("""INSERT INTO cell_towers(
+                    device_id,timestamp,radio_type,mobile_country_code,mobile_network_code,
+                    area_code,cell_id,signal_dbm,latitude,longitude,accuracy)
+                 VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
+              (device_id, ts, report.radio_type, report.mobile_country_code,
+               report.mobile_network_code, report.area_code, report.cell_id,
+               report.signal_dbm, report.latitude, report.longitude, report.accuracy))
+    c.commit()
+    c.close()
+    audit("CELL_TOWER_REPORT", device_id, f"{report.radio_type}:{report.cell_id}")
+    return {"accepted": True, "timestamp": ts}
+
 @app.get("/devices")
 def devices():
     c = db()
@@ -134,6 +182,16 @@ def locations(device_id: str, limit: int = 100):
     c = db()
     rows = [dict(r) for r in c.execute(
         "SELECT * FROM locations WHERE device_id=? ORDER BY timestamp DESC LIMIT ?",
+        (device_id, min(max(limit, 1), 1000))
+    ).fetchall()]
+    c.close()
+    return rows
+
+@app.get("/devices/{device_id}/cell-towers")
+def cell_towers(device_id: str, limit: int = 100):
+    c = db()
+    rows = [dict(r) for r in c.execute(
+        "SELECT * FROM cell_towers WHERE device_id=? ORDER BY timestamp DESC LIMIT ?",
         (device_id, min(max(limit, 1), 1000))
     ).fetchall()]
     c.close()
